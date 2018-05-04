@@ -1,0 +1,47 @@
+version: '3.1'
+
+services:
+  db:
+    container_name: sixpm-mysql
+    image: mysql:5.7
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress # Customize if you want
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    container_name: sixpm-phpmyadmin
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+
+  wordpress:
+    container_name: sixpm-wp
+    depends_on:
+      - db
+    image: wordpress:latest
+    volumes:
+      - ./www:/var/www/html
+      - ./config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./config/php.ini:/usr/local/etc/php/php.ini
+      - ./config/log:/var/log/php
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: user # Same as DB
+      WORDPRESS_DB_PASSWORD: pass # Same as DB    
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  database:
